@@ -1,0 +1,8 @@
+﻿{
+    "ModuleName":  "SCORCH",
+    "ModuleVersion":  "0.1.00001",
+    "ModuleDescription":  "SC Orchestrator web service",
+    "ModuleAuthor":  "Josh Burkard",
+    "ModuleCompany":  "Josh Burkard",
+    "ModulePrefix":  "SCO"
+}
