@@ -27,7 +27,7 @@
             this parameter is not mandatory
 
         .EXAMPLE
-            $parameters = Get-SCORunbookParameter -OrchestratorServer 'p-int-inf069.sd.dika.be' -Credential $Credential -RunbookGUID '92d21309-de5b-4035-9e15-cdcdbdad3c8e'
+            $parameters = Get-SCORunbookParameter -OrchestratorServer $OrchestratorServer -Credential $Credential -RunbookGUID '92d21309-de5b-4035-9e15-cdcdbdad3c8e'
             $parameters.Inputs
             $parameters.Outputs
     #>

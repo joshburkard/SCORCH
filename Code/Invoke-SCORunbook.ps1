@@ -69,23 +69,24 @@
     $function = $($MyInvocation.MyCommand.Name)
     Write-Verbose "Running $function"
 
-    $SCORunbookParams = @{
+    $InvokeParams = @{
         OrchestratorServer = $OrchestratorServer
         OrchestratorPort = $OrchestratorPort
     }
     if ( [boolean]$Credential ) {
-        $SCORunbookParams.Add( 'Credential', $Credential )
+        $InvokeParams.Add( 'Credential', $Credential )
     }
+
     if ( [boolean]$RunbookName ) {
-        $SCORunbookParams.Add( 'RunbookName', $RunbookName )
+        $Runbook = Get-SCORunbook @InvokeParams -RunbookName $RunbookName
     }
     elseif ( [boolean]$RunbookGUID ) {
-        $SCORunbookParams.Add( 'RunbookGUID', $RunbookGUID )
+        $Runbook = Get-SCORunbook @InvokeParams -RunbookGUID $RunbookGUID
     }
     else {
         throw "you have to define RunbookGUID or RunbookName"
     }
-    $Runbook = Get-SCORunbook @SCORunbookParams
+
     if ( [boolean]$Runbook ) {
         $RunbookGUID = $Runbook.GUID
     }
@@ -93,15 +94,7 @@
         throw "runbook not found"
     }
 
-    $SCORunbookParameter = @{
-        OrchestratorServer = $OrchestratorServer
-        OrchestratorPort = $OrchestratorPort
-        RunbookGUID = $RunbookGUID
-    }
-    if ( [boolean]$Credential ) {
-        $SCORunbookParameter.Add( 'Credential', $Credential )
-    }
-    $RunbookParams = Get-SCORunbookParameter @SCORunbookParameter
+    $RunbookParams = Get-SCORunbookParameter @InvokeParams -RunbookGUID $RunbookGUID
 
     $RunbookInputParams = $RunbookParams.Inputs
     $POSTBody = @"
@@ -132,20 +125,20 @@
     $BaseURI = "http://${OrchestratorServer}:${OrchestratorPort}"
     $URI = "$BaseURI/Orchestrator2012/Orchestrator.svc/Jobs/"
 
-    $InvokeParams = @{
+    $RequestParams = @{
         URI = $URI
         Method = 'Post'
         Body = $POSTBody
         ContentType = 'application/atom+xml'
     }
     if ( [boolean]$Credential ) {
-        $InvokeParams.Add( 'Credential', $Credential )
+        $RequestParams.Add( 'Credential', $Credential )
     }
     else {
-        $InvokeParams.Add( 'UseDefaultCredentials', $true )
+        $RequestParams.Add( 'UseDefaultCredentials', $true )
     }
     try {
-        $result = Invoke-WebRequest @InvokeParams -ErrorAction SilentlyContinue
+        $result = Invoke-WebRequest @RequestParams
     }
     catch {
         $result = $null
@@ -153,9 +146,16 @@
     if ( [boolean]$result ) {
         $resxml = [xml]$result.Content
         if ( [boolean]$wait ) {
+            $RequestParams = @{}
+            if ( [boolean]$Credential ) {
+                $RequestParams.Add( 'Credential', $Credential )
+            }
+            else {
+                $RequestParams.Add( 'UseDefaultCredentials', $true )
+            }
 
             do {
-                $StatusContent = Invoke-RestMethod -Uri $resxml.entry.id -Credential $Credential
+                $StatusContent = Invoke-RestMethod @RequestParams -Uri $resxml.entry.id
                 $CurrentStatus = $StatusContent.entry.content.properties.Status
                 if ( $CurrentStatus -notin @( 'Completed', 'Failed' ) ) {
                     Start-Sleep -Seconds 5
@@ -173,13 +173,14 @@
                 EndTime = Get-Date $StatusContent.entry.content.properties.LastModifiedTime.'#text'
             }
             $InstanceURI = "$BaseURI/Orchestrator2012/Orchestrator.svc/Jobs(guid'${JobID}')/Instances"
-            # $OutputURI = "$BaseURI/Orchestrator2012/Orchestrator.svc/RunbookInstances(guid'$( $StatusContent.entry.content.properties.Id.'#text' )')/Parameters"
-            $InstanceRes = Invoke-RestMethod -Uri $InstanceURI -Method Get -Credential $Credential
+            $InstanceRes = Invoke-RestMethod -Uri $InstanceURI -Method Get @RequestParams
             $href = ( $InstanceRes.link | Where-Object { $_.title -eq 'Parameters' } ).href
             $OutputURI = "$BaseURI/Orchestrator2012/Orchestrator.svc/$href"
-            $OutputRes = Invoke-RestMethod -Uri $OutputURI -Method Get -Credential $Credential
+            $OutputRes = Invoke-RestMethod -Uri $OutputURI -Method Get @RequestParams
             $Output = $OutputRes.content.properties | Where-Object { $_.Direction -eq 'out' } | Select-Object Name, Value
-            $ret.Add( 'Output', $Output )
+            if ( [boolean]$Output ) {
+                $ret.Add( 'Output', $Output )
+            }
         }
         else {
             $resxml.entry.id -match "guid'(.*)'"

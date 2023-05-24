@@ -32,10 +32,12 @@
             this parameter is not mandatory
 
         .EXAMPLE
-            $Runbooks = Get-SCORunbook -OrchestratorServer 'p-int-inf069.sd.dika.be' -Credential $Credential
-            Get-SCORunbook -OrchestratorServer 'p-int-inf069.sd.dika.be' -Credential $Credential -RunbookName '3.2.0 Approve SCOM agent'
+            $Runbooks = Get-SCORunbook -OrchestratorServer $OrchestratorServer -Credential $Credential
             $Runbooks | Out-GridView -PassThru
-    #>
+
+        .EXAMPLE
+            Get-SCORunbook -OrchestratorServer $OrchestratorServer -Credential $Credential -RunbookName $RunbookName
+        #>
     [CmdLetBinding()]
     Param (
         [Parameter(Mandatory=$true)]
@@ -108,5 +110,3 @@
     $ret = $Runbooks
     return $ret
 }
-
-
