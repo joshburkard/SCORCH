@@ -1,5 +1,5 @@
 ﻿<#
-    Generated at 05/24/2023 07:43:38 by Josh Burkard
+    Generated at 05/24/2023 08:13:37 by Josh Burkard
 #>
 #region namespace SCORCH
 Function Get-SCORunbook {
@@ -270,6 +270,9 @@ function Invoke-SCORunbook {
         [Parameter(ParameterSetName='Name',Mandatory=$false)]
         [Parameter(ParameterSetName='GUI',Mandatory=$false)]
         [HashTable]$Params = @{}
+        ,
+        [Parameter(Mandatory=$false)]
+        [System.Management.Automation.PSCredential]$Credential # = Get-Credential
         ,
         [Parameter(ParameterSetName='Name',Mandatory=$false)]
         [Parameter(ParameterSetName='GUI',Mandatory=$false)]

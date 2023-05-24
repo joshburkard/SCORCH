@@ -58,6 +58,9 @@
         [Parameter(ParameterSetName='GUI',Mandatory=$false)]
         [HashTable]$Params = @{}
         ,
+        [Parameter(Mandatory=$false)]
+        [System.Management.Automation.PSCredential]$Credential # = Get-Credential
+        ,
         [Parameter(ParameterSetName='Name',Mandatory=$false)]
         [Parameter(ParameterSetName='GUI',Mandatory=$false)]
         [switch]$wait
