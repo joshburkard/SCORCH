@@ -11,7 +11,15 @@
 
 # Description
 
+this powershell modules interacts with the SCORCH webservices (System Center Orchestrator).
+
+it is able to list and invoke runbooks.
+
+*cause SCORCH is outdated and there is no further developmenmt, i will not do any improvements for this module*
+
 # Prerequisites
+
+you need connection to the SCORCH webservice and valid credentials.
 
 # Functions
 
@@ -59,7 +67,7 @@ Get-SCORunbookParameter -OrchestratorServer $OrchestratorServer -RunbookGUID $Ru
 
 ## start a runbook
 
-you can start a runbook
+you can start a runbook. you can pass input parameters to the runbook and get the returned values back.
 
 ```PowerShell
 $Params = @{
